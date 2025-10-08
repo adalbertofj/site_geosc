@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administração - Documentos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #dc2626;
+            --secondary-color: #6b7280;
+        }
+        body {
+            background: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .admin-header {
+            background: linear-gradient(135deg, var(--primary-color), #991b1b);
+            color: white;
+            padding: 50px 0;
+        }
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .upload-area:hover {
+            border-color: var(--primary-color);
+            background: rgba(220, 38, 38, 0.05);
+        }
+        .upload-area.dragover {
+            border-color: var(--primary-color);
+            background: rgba(220, 38, 38, 0.1);
+        }
+        .card {
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .btn-primary:hover {
+            background-color: #b91c1c;
+            border-color: #b91c1c;
+        }
+        .doc-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.05);
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-header">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1><i class="fas fa-file-alt me-2"></i>Administração - Documentos</h1>
+                            <p class="lead mb-0">Gerenciar área de transparência</p>
+                        </div>
+                        <div>
+                            <a href="admin.html" class="btn btn-outline-light me-2">
+                                <i class="fas fa-camera me-2"></i>Gerenciar Fotos
+                            </a>
+                            <a href="admin-menu.html" class="btn btn-outline-light me-2">
+                                <i class="fas fa-arrow-left me-2"></i>Menu Admin
+                            </a>
+                            <a href="/" class="btn btn-light">
+                                <i class="fas fa-home me-2"></i>Voltar ao Site
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-5">
+        <!-- Formulário de Upload -->
+        <div class="row mb-5">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-plus me-2"></i>Adicionar Novo Documento</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="docForm">
+                            <div class="mb-3">
+                                <label class="form-label">Título do Documento</label>
+                                <input type="text" class="form-control" id="docTitle" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Descrição</label>
+                                <textarea class="form-control" id="docDescription" rows="3" required></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Tipo de Documento</label>
+                                <select class="form-control" id="docType" required>
+                                    <option value="">Selecione o tipo</option>
+                                    <option value="estatuto">Estatuto</option>
+                                    <option value="financeiro">Relatório Financeiro</option>
+                                    <option value="ata">Ata de Reunião</option>
+                                    <option value="plano">Plano de Atividades</option>
+                                    <option value="codigo">Código de Conduta</option>
+                                    <option value="outros">Outros</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Data de Publicação</label>
+                                <input type="date" class="form-control" id="docDate" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Arquivo PDF</label>
+                                <div class="upload-area" id="uploadArea">
+                                    <i class="fas fa-file-pdf fa-3x text-muted mb-3"></i>
+                                    <p class="mb-2">Clique aqui ou arraste um arquivo PDF</p>
+                                    <small class="text-muted">Apenas arquivos PDF (máx. 10MB)</small>
+                                    <input type="file" id="docFile" accept=".pdf" style="display: none;">
+                                </div>
+                                <div id="fileInfo" class="mt-3" style="display: none;">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-file-pdf me-2"></i>
+                                        <span id="fileName"></span>
+                                        <span id="fileSize" class="text-muted ms-2"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>Salvar Documento
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Documentos -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-folder-open me-2"></i>Documentos Publicados</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3" id="docsList">
+                            <!-- Documentos serão carregados dinamicamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const docFile = document.getElementById('docFile');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+
+        uploadArea.addEventListener('click', () => docFile.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        docFile.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (file.type === 'application/pdf') {
+                fileName.textContent = file.name;
+                fileSize.textContent = `(${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                fileInfo.style.display = 'block';
+            } else {
+                alert('Por favor, selecione apenas arquivos PDF.');
+            }
+        }
+
+        document.getElementById('docForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('docTitle').value;
+            const description = document.getElementById('docDescription').value;
+            const type = document.getElementById('docType').value;
+            const date = document.getElementById('docDate').value;
+            
+            if (title && description && type && date && docFile.files.length > 0) {
+                addDocToList(title, description, type, date);
+                alert('Documento salvo com sucesso!');
+                document.getElementById('docForm').reset();
+                fileInfo.style.display = 'none';
+            }
+        });
+
+        function getDocIcon(type) {
+            const icons = {
+                'estatuto': 'fas fa-file-contract text-primary',
+                'financeiro': 'fas fa-chart-line text-success',
+                'ata': 'fas fa-file-alt text-info',
+                'plano': 'fas fa-calendar text-warning',
+                'codigo': 'fas fa-shield-alt text-secondary',
+                'outros': 'fas fa-file-pdf text-danger'
+            };
+            return icons[type] || 'fas fa-file-pdf text-danger';
+        }
+
+        function addDocToList(title, description, type, date) {
+            const docsList = document.getElementById('docsList');
+            const dateFormatted = new Date(date).toLocaleDateString('pt-BR');
+            const iconClass = getDocIcon(type);
+            
+            // Salvar no localStorage
+            const savedDocs = localStorage.getItem('escoteiroDocuments');
+            const documents = savedDocs ? JSON.parse(savedDocs) : [];
+            
+            const newDocument = {
+                title: title,
+                description: description,
+                type: type,
+                date: date,
+                dateFormatted: dateFormatted,
+                id: Date.now()
+            };
+            
+            documents.push(newDocument);
+            localStorage.setItem('escoteiroDocuments', JSON.stringify(documents));
+            
+            const newDoc = `
+                <div class="col-md-6" data-doc-id="${newDocument.id}">
+                    <div class="card">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="doc-icon me-3">
+                                    <i class="${iconClass} fa-2x"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="card-title mb-2">${title}</h6>
+                                    <p class="card-text text-muted small mb-2">${description}</p>
+                                    <small class="text-muted">Publicado em: ${dateFormatted}</small>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteDoc(this)">
+                                    <i class="fas fa-trash"></i> Excluir
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            docsList.insertAdjacentHTML('beforeend', newDoc);
+        }
+
+        function deleteDoc(button) {
+            if (confirm('Tem certeza que deseja excluir este documento?')) {
+                const card = button.closest('.col-md-6');
+                const docId = card.getAttribute('data-doc-id');
+                
+                // Remover do localStorage
+                const savedDocs = localStorage.getItem('escoteiroDocuments');
+                if (savedDocs) {
+                    const documents = JSON.parse(savedDocs);
+                    const filteredDocs = documents.filter(doc => doc.id != docId);
+                    localStorage.setItem('escoteiroDocuments', JSON.stringify(filteredDocs));
+                }
+                
+                card.remove();
+            }
+        }
+
+        // Carregar documentos existentes
+        function loadExistingDocuments() {
+            const savedDocs = localStorage.getItem('escoteiroDocuments');
+            if (savedDocs) {
+                const documents = JSON.parse(savedDocs);
+                const docsList = document.getElementById('docsList');
+                
+                documents.forEach(doc => {
+                    const iconClass = getDocIcon(doc.type);
+                    const newDoc = `
+                        <div class="col-md-6" data-doc-id="${doc.id}">
+                            <div class="card">
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-start mb-3">
+                                        <div class="doc-icon me-3">
+                                            <i class="${iconClass} fa-2x"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="card-title mb-2">${doc.title}</h6>
+                                            <p class="card-text text-muted small mb-2">${doc.description}</p>
+                                            <small class="text-muted">Publicado em: ${doc.dateFormatted}</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteDoc(this)">
+                                            <i class="fas fa-trash"></i> Excluir
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    docsList.insertAdjacentHTML('beforeend', newDoc);
+                });
+            }
+        }
+
+        // Verificar autenticação
+        function checkAuth() {
+            const isLoggedIn = localStorage.getItem('adminLoggedIn');
+            const loginTime = localStorage.getItem('loginTime');
+            const currentTime = Date.now();
+            const sessionDuration = 2 * 60 * 60 * 1000; // 2 horas
+            
+            if (!isLoggedIn || !loginTime || (currentTime - loginTime) > sessionDuration) {
+                localStorage.removeItem('adminLoggedIn');
+                localStorage.removeItem('loginTime');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Carregar documentos ao inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadExistingDocuments();
+        });
+    </script>
+</body>
+</html>
