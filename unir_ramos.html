@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unir Imagens dos Ramos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .canvas-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        canvas {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #c82333;
+        }
+        .file-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .file-input {
+            padding: 10px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .file-input input {
+            margin: 5px 0;
+        }
+        .preview {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Unir Imagens dos Ramos Escoteiros</h1>
+        <p>Carregue as 5 imagens dos ramos para criar uma imagem unificada:</p>
+        
+        <div class="file-inputs">
+            <div class="file-input">
+                <label>Filhotes:</label><br>
+                <input type="file" id="filhotes" accept="image/*">
+                <div id="preview-filhotes"></div>
+            </div>
+            <div class="file-input">
+                <label>Lobinho:</label><br>
+                <input type="file" id="lobinho" accept="image/*">
+                <div id="preview-lobinho"></div>
+            </div>
+            <div class="file-input">
+                <label>Escoteiro:</label><br>
+                <input type="file" id="escoteiro" accept="image/*">
+                <div id="preview-escoteiro"></div>
+            </div>
+            <div class="file-input">
+                <label>Sênior:</label><br>
+                <input type="file" id="senior" accept="image/*">
+                <div id="preview-senior"></div>
+            </div>
+            <div class="file-input">
+                <label>Pioneiro:</label><br>
+                <input type="file" id="pioneiro" accept="image/*">
+                <div id="preview-pioneiro"></div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button onclick="unirImagens()">Unir Imagens</button>
+            <button onclick="baixarImagem()" id="downloadBtn" style="display:none;">Baixar Imagem Unida</button>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="canvas" width="1000" height="200"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const images = {};
+        const fileInputs = ['filhotes', 'lobinho', 'escoteiro', 'senior', 'pioneiro'];
+        
+        // Configurar listeners para os inputs
+        fileInputs.forEach(ramo => {
+            document.getElementById(ramo).addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const img = new Image();
+                        img.onload = function() {
+                            images[ramo] = img;
+                            // Mostrar preview
+                            const preview = document.getElementById(`preview-${ramo}`);
+                            preview.innerHTML = `<img src="${event.target.result}" class="preview">`;
+                        };
+                        img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+        
+        function unirImagens() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Verificar se todas as imagens foram carregadas
+            if (Object.keys(images).length !== 5) {
+                alert('Por favor, carregue todas as 5 imagens dos ramos.');
+                return;
+            }
+            
+            // Limpar canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Configurações
+            const imageWidth = 180;
+            const imageHeight = 180;
+            const spacing = 20;
+            const startX = (canvas.width - (imageWidth * 5 + spacing * 4)) / 2;
+            const startY = (canvas.height - imageHeight) / 2;
+            
+            // Desenhar as imagens lado a lado
+            fileInputs.forEach((ramo, index) => {
+                if (images[ramo]) {
+                    const x = startX + (imageWidth + spacing) * index;
+                    ctx.drawImage(images[ramo], x, startY, imageWidth, imageHeight);
+                }
+            });
+            
+            // Mostrar botão de download
+            document.getElementById('downloadBtn').style.display = 'inline-block';
+        }
+        
+        function baixarImagem() {
+            const canvas = document.getElementById('canvas');
+            const link = document.createElement('a');
+            link.download = 'ramos_unidos.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+    </script>
+</body>
+</html>

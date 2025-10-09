@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Álbum de Fotos - 83º Grupo Escoteiro Olave Saint Clair</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .hero-header {
+            background: linear-gradient(135deg, #0d6efd, #0056b3);
+            color: white;
+            padding: 80px 0 60px;
+        }
+        .section-padding {
+            padding: 60px 0;
+        }
+        .photo-card {
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        .photo-card:hover {
+            transform: translateY(-5px);
+        }
+        .card {
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="hero-header">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <img src="logo.png" alt="Logo" style="height: 60px; width: auto;" class="mb-3">
+                    <h1 class="display-4 fw-bold mb-3">Álbum de Fotos</h1>
+                    <p class="lead">Momentos especiais do 83º Grupo Escoteiro Olave Saint Clair</p>
+                    <a href="/" class="btn btn-light btn-lg mt-3">
+                        <i class="fas fa-arrow-left me-2"></i>Voltar ao Site
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Álbum de Fotos -->
+    <div class="section-padding">
+        <div class="container">
+            <div class="row g-4" id="photo-gallery">
+
+                
+                <!-- Fotos dinâmicas do localStorage serão carregadas aqui -->
+            </div>
+            
+            <!-- Mensagem quando não há fotos -->
+            <div id="no-photos" class="text-center mt-5" style="display: none;">
+                <i class="fas fa-camera fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">Nenhuma foto adicional encontrada</h4>
+                <p class="text-muted">As fotos serão exibidas aqui quando forem adicionadas pela área administrativa.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Carregar fotos do localStorage
+        function loadPhotos() {
+            const savedPhotos = localStorage.getItem('escoteiroPhotos');
+            const photoGallery = document.getElementById('photo-gallery');
+            const noPhotosMsg = document.getElementById('no-photos');
+            
+            // Limpar galeria antes de recarregar
+            photoGallery.innerHTML = '';
+            noPhotosMsg.style.display = 'none';
+            
+            if (savedPhotos) {
+                const photos = JSON.parse(savedPhotos);
+                
+                if (photos.length > 0) {
+                    photos.forEach(photo => {
+                        const photoHTML = `
+                            <div class="col-lg-4 col-md-6" data-photo-id="${photo.id}">
+                                <div class="card photo-card">
+                                    <img src="${photo.imageSrc}" class="card-img-top" alt="${photo.title}">
+                                    <div class="card-body">
+                                        <h6 class="card-title">${photo.title}</h6>
+                                        <small class="text-muted">${photo.dateFormatted}</small>
+                                        <div class="mt-2">
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deletePhoto(this)">
+                                                <i class="fas fa-trash"></i> Excluir
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        photoGallery.insertAdjacentHTML('beforeend', photoHTML);
+                    });
+                } else {
+                    noPhotosMsg.style.display = 'block';
+                }
+            } else {
+                noPhotosMsg.style.display = 'block';
+            }
+        }
+
+        // Carregar fotos ao inicializar a página
+        document.addEventListener('DOMContentLoaded', loadPhotos);
+
+        // Função para excluir foto
+        function deletePhoto(button) {
+            if (confirm('Tem certeza que deseja excluir esta foto?')) {
+                const card = button.closest('.col-lg-4');
+                const photoId = card.getAttribute('data-photo-id');
+                
+                // Remover do localStorage
+                const savedPhotos = localStorage.getItem('escoteiroPhotos');
+                if (savedPhotos) {
+                    const photos = JSON.parse(savedPhotos);
+                    const filteredPhotos = photos.filter(photo => photo.id != photoId);
+                    localStorage.setItem('escoteiroPhotos', JSON.stringify(filteredPhotos));
+                }
+                
+                card.remove();
+                
+                // Verificar se não há mais fotos
+                const remainingPhotos = document.querySelectorAll('#photo-gallery .col-lg-4');
+                if (remainingPhotos.length === 0) {
+                    document.getElementById('no-photos').style.display = 'block';
+                }
+            }
+        }
+
+        // Recarregar fotos quando a janela ganhar foco (voltando do admin)
+        window.addEventListener('focus', loadPhotos);
+    </script>
+</body>
+</html>
