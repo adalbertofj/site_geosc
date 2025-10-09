@@ -91,11 +91,7 @@
                                     <div class="card-body">
                                         <h6 class="card-title">${photo.title}</h6>
                                         <small class="text-muted">${photo.dateFormatted}</small>
-                                        <div class="mt-2">
-                                            <button class="btn btn-sm btn-outline-danger" onclick="deletePhoto(this)">
-                                                <i class="fas fa-trash"></i> Excluir
-                                            </button>
-                                        </div>
+
                                     </div>
                                 </div>
                             </div>
@@ -113,29 +109,7 @@
         // Carregar fotos ao inicializar a página
         document.addEventListener('DOMContentLoaded', loadPhotos);
 
-        // Função para excluir foto
-        function deletePhoto(button) {
-            if (confirm('Tem certeza que deseja excluir esta foto?')) {
-                const card = button.closest('.col-lg-4');
-                const photoId = card.getAttribute('data-photo-id');
-                
-                // Remover do localStorage
-                const savedPhotos = localStorage.getItem('escoteiroPhotos');
-                if (savedPhotos) {
-                    const photos = JSON.parse(savedPhotos);
-                    const filteredPhotos = photos.filter(photo => photo.id != photoId);
-                    localStorage.setItem('escoteiroPhotos', JSON.stringify(filteredPhotos));
-                }
-                
-                card.remove();
-                
-                // Verificar se não há mais fotos
-                const remainingPhotos = document.querySelectorAll('#photo-gallery .col-lg-4');
-                if (remainingPhotos.length === 0) {
-                    document.getElementById('no-photos').style.display = 'block';
-                }
-            }
-        }
+
 
         // Recarregar fotos quando a janela ganhar foco (voltando do admin)
         window.addEventListener('focus', loadPhotos);
