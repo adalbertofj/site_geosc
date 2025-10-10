@@ -84,6 +84,7 @@
                 
                 if (photos.length > 0) {
                     photos.forEach(photo => {
+                        const linkButton = photo.link ? `<a href="${photo.link}" target="_blank" class="btn btn-sm btn-primary mt-2"><i class="fas fa-external-link-alt me-1"></i>Ver Álbum Completo</a>` : '';
                         const photoHTML = `
                             <div class="col-lg-4 col-md-6" data-photo-id="${photo.id}">
                                 <div class="card photo-card">
@@ -91,7 +92,7 @@
                                     <div class="card-body">
                                         <h6 class="card-title">${photo.title}</h6>
                                         <small class="text-muted">${photo.dateFormatted}</small>
-
+                                        ${linkButton}
                                     </div>
                                 </div>
                             </div>

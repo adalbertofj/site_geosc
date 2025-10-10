@@ -124,6 +124,12 @@
                             </div>
                             
                             <div class="mb-3">
+                                <label class="form-label">Link para Álbum Completo (Opcional)</label>
+                                <input type="url" class="form-control" id="photoLink" placeholder="https://photos.google.com/share/...">
+                                <small class="text-muted">Link para Google Fotos, Flickr ou outro repositório</small>
+                            </div>
+                            
+                            <div class="mb-3">
                                 <label class="form-label">Foto</label>
                                 <div class="upload-area" id="uploadArea">
                                     <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
@@ -399,11 +405,12 @@
             const title = document.getElementById('photoTitle').value;
             const description = document.getElementById('photoDescription').value;
             const date = document.getElementById('photoDate').value;
+            const link = document.getElementById('photoLink').value;
             
-            console.log('Dados:', { title, description, date, hasFile: photoFile.files.length > 0 });
+            console.log('Dados:', { title, description, date, link, hasFile: photoFile.files.length > 0 });
             
             if (title && date && photoFile.files.length > 0) {
-                addPhotoToList(title, description, date, previewImage.src);
+                addPhotoToList(title, description, date, previewImage.src, link);
                 alert('Foto salva com sucesso!');
                 document.getElementById('photoForm').reset();
                 photoPreview.style.display = 'none';
@@ -413,7 +420,7 @@
             }
         });
 
-        function addPhotoToList(title, description, date, imageSrc) {
+        function addPhotoToList(title, description, date, imageSrc, link) {
             const photosList = document.getElementById('photosList');
             const dateFormatted = new Date(date).toLocaleDateString('pt-BR', {month: 'long', year: 'numeric'});
             
@@ -427,6 +434,7 @@
                 date: date,
                 dateFormatted: dateFormatted,
                 imageSrc: imageSrc,
+                link: link || '',
                 id: Date.now()
             };
             
@@ -446,6 +454,8 @@
                 }
             }
             
+            const linkButton = link ? `<a href="${link}" target="_blank" class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-external-link-alt"></i> Álbum</a>` : '';
+            
             const newPhotoHTML = `
                 <div class="col-md-4" data-photo-id="${newPhoto.id}">
                     <div class="card">
@@ -454,6 +464,7 @@
                             <h6 class="card-title">${title}</h6>
                             <small class="text-muted">${dateFormatted}</small>
                             <div class="mt-2">
+                                ${linkButton}
                                 <button class="btn btn-sm btn-outline-danger" onclick="deletePhoto(this)">
                                     <i class="fas fa-trash"></i> Excluir
                                 </button>
@@ -491,6 +502,7 @@
                 const photosList = document.getElementById('photosList');
                 
                 photos.forEach(photo => {
+                    const linkButton = photo.link ? `<a href="${photo.link}" target="_blank" class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-external-link-alt"></i> Álbum</a>` : '';
                     const newPhotoHTML = `
                         <div class="col-md-4" data-photo-id="${photo.id}">
                             <div class="card">
@@ -499,6 +511,7 @@
                                     <h6 class="card-title">${photo.title}</h6>
                                     <small class="text-muted">${photo.dateFormatted}</small>
                                     <div class="mt-2">
+                                        ${linkButton}
                                         <button class="btn btn-sm btn-outline-danger" onclick="deletePhoto(this)">
                                             <i class="fas fa-trash"></i> Excluir
                                         </button>
