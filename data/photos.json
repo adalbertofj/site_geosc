@@ -1,1 +1,20 @@
-[]
+[
+  {
+    "id": 1,
+    "title": "Atividade Escoteira",
+    "description": "Jovens em atividade ao ar livre",
+    "date": "2024-01-15",
+    "dateFormatted": "janeiro de 2024",
+    "imageSrc": "atividade1.jpg",
+    "link": "https://photos.google.com/share/exemplo"
+  },
+  {
+    "id": 2,
+    "title": "Acampamento",
+    "description": "Acampamento de fim de semana",
+    "date": "2024-02-10",
+    "dateFormatted": "fevereiro de 2024",
+    "imageSrc": "acampamento1.jpg",
+    "link": ""
+  }
+]
