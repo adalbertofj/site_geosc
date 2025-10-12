@@ -500,12 +500,30 @@
         }
 
         // Carregar fotos existentes
-        function loadExistingPhotos() {
-            const savedPhotos = localStorage.getItem('escoteiroPhotos');
-            if (savedPhotos) {
-                const photos = JSON.parse(savedPhotos);
-                const photosList = document.getElementById('photosList');
-                
+        async function loadExistingPhotos() {
+            const photosList = document.getElementById('photosList');
+            let photos = [];
+            
+            // Tentar carregar do site-data.json primeiro (produção)
+            try {
+                const response = await fetch('data/site-data.json');
+                if (response.ok) {
+                    const data = await response.json();
+                    photos = data.photos || [];
+                }
+            } catch (error) {
+                console.log('site-data.json não encontrado, usando localStorage');
+            }
+            
+            // Se não encontrou no JSON, usar localStorage
+            if (photos.length === 0) {
+                const savedPhotos = localStorage.getItem('escoteiroPhotos');
+                if (savedPhotos) {
+                    photos = JSON.parse(savedPhotos);
+                }
+            }
+            
+            if (photos.length > 0) {
                 photos.forEach(photo => {
                     const linkButton = photo.link ? `<a href="${photo.link}" target="_blank" class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-external-link-alt"></i> Álbum</a>` : '';
                     const newPhotoHTML = `
