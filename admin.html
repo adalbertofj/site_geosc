@@ -81,11 +81,11 @@
                     <i class="fas fa-camera me-2"></i>Gerenciar Fotos
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
+            <!--<li class="nav-item" role="presentation">
                 <button class="nav-link" id="docs-tab" data-bs-toggle="tab" data-bs-target="#docs" type="button" role="tab">
                     <i class="fas fa-file-alt me-2"></i>Gerenciar Documentos
                 </button>
-            </li>
+            </li>-->
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="links-tab" data-bs-toggle="tab" data-bs-target="#links" type="button" role="tab">
                     <i class="fas fa-link me-2"></i>Gerenciar Links
@@ -263,6 +263,11 @@
                         <div class="card">
                             <div class="card-header bg-info text-white">
                                 <h5 class="mb-0"><i class="fas fa-plus me-2"></i>Adicionar Novo Link</h5>
+                            </div>
+                            <div class="alert alert-warning mx-3 mt-3">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Importante:</strong> Após adicionar/remover links, clique no botão abaixo e substitua o arquivo <code>public/data/site-data.json</code>
+                                <button class="btn btn-sm btn-primary ms-2" onclick="downloadCurrentJSON()"><i class="fas fa-download me-1"></i>Baixar site-data.json</button>
                             </div>
                             <div class="card-body">
                                 <form id="linkForm">
@@ -483,7 +488,7 @@
         // Funções para manipular o arquivo site-data.json
         async function savePhotoToFile(newPhoto) {
             const response = await fetch('data/site-data.json');
-            let data = { photos: [] };
+            let data = { photos: [], links: [] };
             
             if (response.ok) {
                 const text = await response.text();
@@ -493,6 +498,7 @@
             }
             
             data.photos = data.photos || [];
+            data.links = data.links || [];
             data.photos.push(newPhoto);
             
             // Salvar no localStorage como backup
@@ -504,7 +510,7 @@
         
         async function removePhotoFromFile(photoId) {
             const response = await fetch('data/site-data.json');
-            let data = { photos: [] };
+            let data = { photos: [], links: [] };
             
             if (response.ok) {
                 const text = await response.text();
@@ -514,6 +520,7 @@
             }
             
             data.photos = data.photos.filter(photo => photo.id != photoId);
+            data.links = data.links || [];
             
             // Salvar no localStorage como backup
             localStorage.setItem('escoteiroPhotos', JSON.stringify(data.photos));
@@ -523,6 +530,12 @@
         }
         
         function downloadJSON(data) {
+            // Garantir que os links do localStorage estão incluídos
+            const savedLinks = localStorage.getItem('escoteiroLinks');
+            if (savedLinks && (!data.links || data.links.length === 0)) {
+                data.links = JSON.parse(savedLinks);
+            }
+            
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -819,7 +832,7 @@
             }
         });
 
-        function addLinkToList(title, description, url, icon, color) {
+        async function addLinkToList(title, description, url, icon, color) {
             const linksList = document.getElementById('linksList');
             
             // Salvar no localStorage
@@ -839,6 +852,9 @@
             localStorage.setItem('escoteiroLinks', JSON.stringify(links));
             
             addLinkToInterface(newLink);
+            
+            // Atualizar arquivo JSON
+            await saveLinkToFile(newLink);
         }
         
         function addLinkToInterface(link) {
@@ -867,7 +883,7 @@
             linksList.insertAdjacentHTML('beforeend', newLinkHTML);
         }
 
-        function deleteLink(button) {
+        async function deleteLink(button) {
             if (confirm('Tem certeza que deseja excluir este link?')) {
                 const card = button.closest('.col-md-4');
                 const linkId = card.getAttribute('data-link-id');
@@ -881,6 +897,9 @@
                 }
                 
                 card.remove();
+                
+                // Atualizar arquivo JSON
+                await removeLinkFromFile(linkId);
             }
         }
 
@@ -893,14 +912,57 @@
                 });
             }
         }
+        
+        // Funções para manipular links no arquivo site-data.json
+        async function saveLinkToFile(newLink) {
+            const response = await fetch('data/site-data.json');
+            let data = { photos: [], links: [] };
+            
+            if (response.ok) {
+                const text = await response.text();
+                if (text.trim()) {
+                    data = JSON.parse(text);
+                }
+            }
+            
+            data.photos = data.photos || [];
+            data.links = data.links || [];
+            data.links.push(newLink);
+            
+            console.log('JSON atualizado com link:', JSON.stringify(data, null, 2));
+            downloadJSON(data);
+        }
+        
+        async function removeLinkFromFile(linkId) {
+            const response = await fetch('data/site-data.json');
+            let data = { photos: [], links: [] };
+            
+            if (response.ok) {
+                const text = await response.text();
+                if (text.trim()) {
+                    data = JSON.parse(text);
+                }
+            }
+            
+            data.photos = data.photos || [];
+            data.links = data.links ? data.links.filter(link => link.id != linkId) : [];
+            
+            console.log('JSON atualizado após remoção do link:', JSON.stringify(data, null, 2));
+            downloadJSON(data);
+        }
 
 
 
         // Função para baixar JSON atual
         function downloadCurrentJSON() {
             const savedPhotos = localStorage.getItem('escoteiroPhotos');
+            const savedLinks = localStorage.getItem('escoteiroLinks');
             const photos = savedPhotos ? JSON.parse(savedPhotos) : [];
-            const data = { photos: photos };
+            const links = savedLinks ? JSON.parse(savedLinks) : [];
+            const data = { 
+                photos: photos,
+                links: links
+            };
             
             const jsonContent = JSON.stringify(data, null, 2);
             const blob = new Blob([jsonContent], { type: 'application/json' });

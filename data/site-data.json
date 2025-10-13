@@ -18,5 +18,39 @@
       "link": "https://photos.google.com/u/3/album/AF1QipNMXGu0kYGXHhyJ9TzdsuhbkVndMWZtAFJg8URR",
       "id": 1760348965806
     }
+  ],
+  "links": [
+    {
+      "title": "Balanço Contábil 2023",
+      "description": "Balanço Contábil 202N/view",
+      "url": "https://drive.google.com/file/d/1OK2Dt1iiPgX5Xj8nnS_dBAfNub-OBxHN/view",
+      "icon": "fas fa-globe",
+      "color": "primary",
+      "id": 1759947754636
+    },
+    {
+      "title": "Prestação de Contas Elétrica da Sede",
+      "description": "Prestação de contas da realização da obra de elétrica da sede.",
+      "url": "https://drive.google.com/file/d/10YoLlOkNQjgRn9HBa5WCaTntcoE2O9Kb/view",
+      "icon": "fas fa-globe",
+      "color": "primary",
+      "id": 1759948707653
+    },
+    {
+      "title": "Formulário para solicitação de Atividades",
+      "description": "Formulário para solicitação de Atividades",
+      "url": "https://docs.google.com/document/d/1619iik0wGfPrGAlXkF8GQqG8mMYll3i5m_PeLXIpQL0/edit?tab=t.0",
+      "icon": "fas fa-globe",
+      "color": "primary",
+      "id": 1759948810885
+    },
+    {
+      "title": "Regulamento Interno 2025",
+      "description": "Regulamento Interno 2025",
+      "url": "https://drive.google.com/drive/u/3/folders/1r7zmLGmk7nSfxjs15Yw8RPZOFomSxDI9",
+      "icon": "fas fa-globe",
+      "color": "primary",
+      "id": 1760360876968
+    }
   ]
 }
