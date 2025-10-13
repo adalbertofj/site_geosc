@@ -106,10 +106,10 @@
                     <div class="card-header bg-primary text-white">
                         <h5 class="mb-0"><i class="fas fa-plus me-2"></i>Adicionar Nova Foto</h5>
                     </div>
-                    <div class="alert alert-info mx-3 mt-3">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <strong>Instruções:</strong> Após adicionar fotos, copie o conteúdo do localStorage para o arquivo <code>data/photos.json</code> e faça commit no GitHub para sincronizar com outros computadores.
-                        <button class="btn btn-sm btn-outline-primary ms-2" onclick="exportToJSON()">Exportar JSON</button>
+                    <div class="alert alert-warning mx-3 mt-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Importante:</strong> Após adicionar/remover fotos, clique no botão abaixo e substitua o arquivo <code>public/data/site-data.json</code>
+                        <button class="btn btn-sm btn-primary ms-2" onclick="downloadCurrentJSON()"><i class="fas fa-download me-1"></i>Baixar site-data.json</button>
                     </div>
                     <div class="card-body">
                         <form id="photoForm">
@@ -425,13 +425,9 @@
             }
         });
 
-        function addPhotoToList(title, description, date, imageSrc, link) {
+        async function addPhotoToList(title, description, date, imageSrc, link) {
             const photosList = document.getElementById('photosList');
             const dateFormatted = new Date(date).toLocaleDateString('pt-BR', {month: 'long', year: 'numeric'});
-            
-            // Salvar no localStorage
-            const savedPhotos = localStorage.getItem('escoteiroPhotos');
-            const photos = savedPhotos ? JSON.parse(savedPhotos) : [];
             
             const newPhoto = {
                 title: title,
@@ -442,22 +438,6 @@
                 link: link || '',
                 id: Date.now()
             };
-            
-            photos.push(newPhoto);
-            
-            try {
-                localStorage.setItem('escoteiroPhotos', JSON.stringify(photos));
-                console.log('Foto salva:', newPhoto);
-                console.log('Total de fotos:', photos.length);
-            } catch (e) {
-                if (e.name === 'QuotaExceededError') {
-                    alert('Erro: Espaço de armazenamento esgotado! Exclua algumas fotos antigas ou use imagens menores.');
-                    photos.pop(); // Remove a foto que não foi salva
-                    return;
-                } else {
-                    throw e;
-                }
-            }
             
             const linkButton = link ? `<a href="${link}" target="_blank" class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-external-link-alt"></i> Álbum</a>` : '';
             
@@ -480,71 +460,127 @@
             `;
             
             photosList.insertAdjacentHTML('beforeend', newPhotoHTML);
+            
+            await savePhotoToFile(newPhoto);
+            console.log('Foto salva:', newPhoto);
         }
 
-        function deletePhoto(button) {
+        async function deletePhoto(button) {
             if (confirm('Tem certeza que deseja excluir esta foto?')) {
                 const card = button.closest('.col-md-4');
                 const photoId = card.getAttribute('data-photo-id');
                 
-                // Remover do localStorage
-                const savedPhotos = localStorage.getItem('escoteiroPhotos');
-                if (savedPhotos) {
-                    const photos = JSON.parse(savedPhotos);
-                    const filteredPhotos = photos.filter(photo => photo.id != photoId);
-                    localStorage.setItem('escoteiroPhotos', JSON.stringify(filteredPhotos));
+                try {
+                    await removePhotoFromFile(photoId);
+                    card.remove();
+                    console.log('Foto removida:', photoId);
+                } catch (e) {
+                    alert('Erro ao remover foto: ' + e.message);
                 }
-                
-                card.remove();
             }
+        }
+
+        // Funções para manipular o arquivo site-data.json
+        async function savePhotoToFile(newPhoto) {
+            const response = await fetch('data/site-data.json');
+            let data = { photos: [] };
+            
+            if (response.ok) {
+                const text = await response.text();
+                if (text.trim()) {
+                    data = JSON.parse(text);
+                }
+            }
+            
+            data.photos = data.photos || [];
+            data.photos.push(newPhoto);
+            
+            // Salvar no localStorage como backup
+            localStorage.setItem('escoteiroPhotos', JSON.stringify(data.photos));
+            
+            console.log('JSON atualizado:', JSON.stringify(data, null, 2));
+            downloadJSON(data);
+        }
+        
+        async function removePhotoFromFile(photoId) {
+            const response = await fetch('data/site-data.json');
+            let data = { photos: [] };
+            
+            if (response.ok) {
+                const text = await response.text();
+                if (text.trim()) {
+                    data = JSON.parse(text);
+                }
+            }
+            
+            data.photos = data.photos.filter(photo => photo.id != photoId);
+            
+            // Salvar no localStorage como backup
+            localStorage.setItem('escoteiroPhotos', JSON.stringify(data.photos));
+            
+            console.log('JSON atualizado:', JSON.stringify(data, null, 2));
+            downloadJSON(data);
+        }
+        
+        function downloadJSON(data) {
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'site-data.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            alert('Arquivo site-data.json baixado! Substitua o arquivo em public/data/site-data.json');
         }
 
         // Carregar fotos existentes
         async function loadExistingPhotos() {
             const photosList = document.getElementById('photosList');
-            let photos = [];
+            photosList.innerHTML = '';
             
-            // Tentar carregar do site-data.json primeiro (produção)
             try {
-                const response = await fetch('data/site-data.json');
+                const response = await fetch('data/site-data.json?t=' + Date.now());
                 if (response.ok) {
-                    const data = await response.json();
-                    photos = data.photos || [];
-                }
-            } catch (error) {
-                console.log('site-data.json não encontrado, usando localStorage');
-            }
-            
-            // Se não encontrou no JSON, usar localStorage
-            if (photos.length === 0) {
-                const savedPhotos = localStorage.getItem('escoteiroPhotos');
-                if (savedPhotos) {
-                    photos = JSON.parse(savedPhotos);
-                }
-            }
-            
-            if (photos.length > 0) {
-                photos.forEach(photo => {
-                    const linkButton = photo.link ? `<a href="${photo.link}" target="_blank" class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-external-link-alt"></i> Álbum</a>` : '';
-                    const newPhotoHTML = `
-                        <div class="col-md-4" data-photo-id="${photo.id}">
-                            <div class="card">
-                                <img src="${photo.imageSrc}" class="card-img-top">
-                                <div class="card-body p-3">
-                                    <h6 class="card-title">${photo.title}</h6>
-                                    <small class="text-muted">${photo.dateFormatted}</small>
-                                    <div class="mt-2">
-                                        ${linkButton}
-                                        <button class="btn btn-sm btn-outline-danger" onclick="deletePhoto(this)">
-                                            <i class="fas fa-trash"></i> Excluir
-                                        </button>
+                    const text = await response.text();
+                    if (text.trim()) {
+                        const data = JSON.parse(text);
+                        const photos = data.photos || [];
+                        
+                        if (photos.length === 0) {
+                            photosList.innerHTML = '<div class="col-12 text-center text-muted"><p>Nenhuma foto cadastrada</p></div>';
+                            return;
+                        }
+                        
+                        photos.forEach(photo => {
+                            const linkButton = photo.link ? `<a href="${photo.link}" target="_blank" class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-external-link-alt"></i> Álbum</a>` : '';
+                            const newPhotoHTML = `
+                                <div class="col-md-4" data-photo-id="${photo.id}">
+                                    <div class="card">
+                                        <img src="${photo.imageSrc}" class="card-img-top">
+                                        <div class="card-body p-3">
+                                            <h6 class="card-title">${photo.title}</h6>
+                                            <small class="text-muted">${photo.dateFormatted}</small>
+                                            <div class="mt-2">
+                                                ${linkButton}
+                                                <button class="btn btn-sm btn-outline-danger" onclick="deletePhoto(this)">
+                                                    <i class="fas fa-trash"></i> Excluir
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    `;
-                    photosList.insertAdjacentHTML('beforeend', newPhotoHTML);
-                });
+                            `;
+                            photosList.insertAdjacentHTML('beforeend', newPhotoHTML);
+                        });
+                    } else {
+                        photosList.innerHTML = '<div class="col-12 text-center text-muted"><p>Nenhuma foto cadastrada</p></div>';
+                    }
+                } else {
+                    photosList.innerHTML = '<div class="col-12 text-center text-muted"><p>Erro ao carregar fotos</p></div>';
+                }
+            } catch (error) {
+                console.log('Erro ao carregar fotos:', error);
+                photosList.innerHTML = '<div class="col-12 text-center text-muted"><p>Erro ao carregar fotos</p></div>';
             }
         }
 
@@ -858,27 +894,24 @@
             }
         }
 
-        // Função para exportar dados para JSON
-        function exportToJSON() {
-            const photos = JSON.parse(localStorage.getItem('escoteiroPhotos') || '[]');
-            const documents = JSON.parse(localStorage.getItem('escoteiroDocuments') || '[]');
-            const links = JSON.parse(localStorage.getItem('escoteiroLinks') || '[]');
+
+
+        // Função para baixar JSON atual
+        function downloadCurrentJSON() {
+            const savedPhotos = localStorage.getItem('escoteiroPhotos');
+            const photos = savedPhotos ? JSON.parse(savedPhotos) : [];
+            const data = { photos: photos };
             
-            const exportData = {
-                photos: photos,
-                documents: documents,
-                links: links
-            };
+            const jsonContent = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonContent], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'site-data.json';
+            a.click();
+            URL.revokeObjectURL(url);
             
-            const dataStr = JSON.stringify(exportData, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'site-data.json';
-            link.click();
-            
-            alert('Dados exportados! Agora:\n1. Extraia os arrays do arquivo baixado\n2. Cole em data/photos.json, data/documents.json e data/links.json\n3. Faça commit no GitHub');
+            alert('Arquivo baixado! Substitua em public/data/site-data.json e recarregue.');
         }
 
         // Carregar fotos, documentos e links ao inicializar

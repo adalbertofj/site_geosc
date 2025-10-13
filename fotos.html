@@ -84,8 +84,11 @@
             try {
                 const response = await fetch('data/site-data.json');
                 if (response.ok) {
-                    const data = await response.json();
-                    photos = data.photos || [];
+                    const text = await response.text();
+                    if (text.trim()) {
+                        const data = JSON.parse(text);
+                        photos = data.photos || [];
+                    }
                 }
             } catch (error) {
                 console.log('JSON não encontrado, usando localStorage');
