@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /admin-docs.html
+Disallow: /admin-menu.html
+Disallow: /login.html
+
+Sitemap: https://www.83geosc.org.br/sitemap.xml

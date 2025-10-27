@@ -530,10 +530,16 @@
         }
         
         function downloadJSON(data) {
-            // Garantir que os links do localStorage estão incluídos
+            // Garantir que os links e documentos do localStorage estão incluídos
             const savedLinks = localStorage.getItem('escoteiroLinks');
+            const savedDocs = localStorage.getItem('escoteiroDocuments');
+            
             if (savedLinks && (!data.links || data.links.length === 0)) {
                 data.links = JSON.parse(savedLinks);
+            }
+            
+            if (savedDocs && (!data.documents || data.documents.length === 0)) {
+                data.documents = JSON.parse(savedDocs);
             }
             
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -957,9 +963,12 @@
         function downloadCurrentJSON() {
             const savedPhotos = localStorage.getItem('escoteiroPhotos');
             const savedLinks = localStorage.getItem('escoteiroLinks');
+            const savedDocs = localStorage.getItem('escoteiroDocuments');
             const photos = savedPhotos ? JSON.parse(savedPhotos) : [];
             const links = savedLinks ? JSON.parse(savedLinks) : [];
+            const documents = savedDocs ? JSON.parse(savedDocs) : [];
             const data = { 
+                documents: documents,
                 photos: photos,
                 links: links
             };
