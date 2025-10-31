@@ -39,38 +39,15 @@
                         <p class="mb-0">83º Grupo Escoteiro Olave Saint Clair</p>
                     </div>
                     <div class="p-4">
-                        <form id="loginForm">
-                            <div class="mb-3">
-                                <label class="form-label">Senha de Acesso</label>
-                                <input type="password" class="form-control" id="password" required>
-                            </div>
-                            <button type="submit" class="btn btn-danger w-100 btn-lg">
+                        <div class="text-center">
+                            <button onclick="window.location.href='admin.html'" class="btn btn-danger w-100 btn-lg">
                                 <i class="fas fa-sign-in-alt me-2"></i>Entrar
                             </button>
-                        </form>
+                        </div>
                         <div class="text-center mt-3">
                             <a href="index.html" class="text-muted">
                                 <i class="fas fa-arrow-left me-1"></i>Voltar ao Site
                             </a>
-                        </div>
-                        
-                        <!-- Área de Cadastro de Senha (só aparece se não houver senha) -->
-                        <div id="setupArea" style="display: none;">
-                            <hr>
-                            <h5 class="text-center mb-3">Primeira Configuração</h5>
-                            <form id="setupForm">
-                                <div class="mb-3">
-                                    <label class="form-label">Criar Senha de Administrador</label>
-                                    <input type="password" class="form-control" id="newPassword" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Confirmar Senha</label>
-                                    <input type="password" class="form-control" id="confirmPassword" required>
-                                </div>
-                                <button type="submit" class="btn btn-success w-100">
-                                    <i class="fas fa-key me-2"></i>Criar Senha
-                                </button>
-                            </form>
                         </div>
                     </div>
                 </div>
@@ -78,57 +55,6 @@
         </div>
     </div>
 
-    <script>
-        // Verificar se já existe senha configurada
-        document.addEventListener('DOMContentLoaded', function() {
-            const adminPassword = localStorage.getItem('adminPassword');
-            if (!adminPassword) {
-                document.getElementById('setupArea').style.display = 'block';
-                document.getElementById('loginForm').style.display = 'none';
-            }
-        });
 
-        // Configurar senha inicial
-        document.getElementById('setupForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            
-            if (newPassword !== confirmPassword) {
-                alert('As senhas não coincidem!');
-                return;
-            }
-            
-            if (newPassword.length < 4) {
-                alert('A senha deve ter pelo menos 4 caracteres!');
-                return;
-            }
-            
-            // Salvar senha (hash simples)
-            const hashedPassword = btoa(newPassword); // Base64 encoding
-            localStorage.setItem('adminPassword', hashedPassword);
-            
-            alert('Senha criada com sucesso!');
-            location.reload();
-        });
-
-        // Login
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const password = document.getElementById('password').value;
-            const storedPassword = localStorage.getItem('adminPassword');
-            
-            if (btoa(password) === storedPassword) {
-                // Login bem-sucedido
-                sessionStorage.setItem('adminLoggedIn', 'true');
-                window.location.href = 'admin.html';
-            } else {
-                alert('Senha incorreta!');
-                document.getElementById('password').value = '';
-            }
-        });
-    </script>
 </body>
 </html>

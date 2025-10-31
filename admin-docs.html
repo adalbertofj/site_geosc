@@ -347,18 +347,8 @@
             }
         }
 
-        // Verificar autenticação
         function checkAuth() {
-            const isLoggedIn = localStorage.getItem('adminLoggedIn');
-            const loginTime = localStorage.getItem('loginTime');
-            const currentTime = Date.now();
-            const sessionDuration = 2 * 60 * 60 * 1000; // 2 horas
-            
-            if (!isLoggedIn || !loginTime || (currentTime - loginTime) > sessionDuration) {
-                localStorage.removeItem('adminLoggedIn');
-                localStorage.removeItem('loginTime');
-                window.location.href = 'login.html';
-            }
+            // Sem verificação de autenticação
         }
 
         // Carregar documentos ao inicializar
